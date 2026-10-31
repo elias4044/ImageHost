@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app-layout" data-page="{{ page }}">
+  <aside class="sidebar" id="navigation">
+    <a class="brand" href="/"><img src="/static/mark.svg" alt="" width="30" height="30">ImageHost</a>
+    <div class="workspace"><span class="instance-dot"></span> Your instance <span class="workspace-detail">Self-hosted</span></div>
+    <nav aria-label="Main navigation">
+      <a href="/" {% if page == '/' %}aria-current="page"{% endif %}><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h5v5H3zM12 3h5v5h-5zM3 12h5v5H3zM12 12h5v5h-5z"/></svg> Overview</a>
+      <a href="/images" {% if page == '/images' %}aria-current="page"{% endif %}><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="1"/><path d="m3 14 4-4 4 4 3-3 3 3"/><circle cx="13" cy="7" r="1"/></svg> Image library</a>
+      <a href="/keys" {% if page == '/keys' %}aria-current="page"{% endif %}><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7" cy="7" r="4"/><path d="m10 10 7 7m-3-3 2-2m-4 0 2-2"/></svg> Application keys</a>
+      <a href="/safety" {% if page == '/safety' %}aria-current="page"{% endif %}><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 7 3v5c0 4-7 8-7 8s-7-4-7-8V5zM6.5 9.5 9 12l4.5-5"/></svg> Content safety</a>
+    </nav>
+    <div class="sidebar-bottom"><a href="/docs">API documentation <span aria-hidden="true">&#8599;</span></a><button id="logout" class="plain">Sign out</button><p>ImageHost / v1.0<br>Open source. On your terms.</p></div>
+  </aside>
+  <header class="topbar"><button class="menu-button" id="menu-toggle" aria-label="Toggle navigation" aria-controls="navigation" aria-expanded="false">Menu</button><span><span class="mobile-product">ImageHost</span><span class="desktop-context">Image infrastructure</span> <span class="breadcrumb">/ Your instance</span></span><a href="/docs">Developer reference</a></header>
+  <main class="sheet" id="main">
+    <div id="page-error" role="alert" hidden></div>
+    {% if page in ['/', '/images'] %}
+    <header class="title-row"><div><h1>{{ 'Overview' if page == '/' else 'Image library' }}</h1><p id="finding">Checking your image pipeline...</p></div><button class="primary" id="open-upload">Upload image <span aria-hidden="true">+</span></button></header>
+    {% if page == '/' %}
+    <section class="pipeline-section" aria-labelledby="pipeline-title">
+      <div class="section-heading"><h2 id="pipeline-title">From upload to delivery</h2><a href="/safety">Safety configuration</a></div>
+      <div class="pipeline" id="pipeline"><div><span class="pipeline-label">Quarantine</span><strong id="count-quarantine">0</strong><p>Waiting for a safe verdict</p></div><div><span class="pipeline-label">Approved</span><strong id="count-ready">0</strong><p>Available for delivery</p></div><div><span class="pipeline-label">Blocked</span><strong id="count-blocked">0</strong><p>Content removed from disk</p></div><div><span class="pipeline-label">Scanner errors</span><strong id="count-errors">0</strong><p>Private until checks pass</p></div></div>
+    </section>
+    <div class="overview-columns">
+      <section class="activity-panel" aria-labelledby="activity-title"><div class="section-heading"><h2 id="activity-title">Upload activity</h2><span>Last 14 days / UTC</span></div><div id="upload-chart" class="chart" role="img" aria-label="Upload counts over the last 14 days"></div></section>
+      <section class="delivery-panel" aria-labelledby="delivery-title"><h2 id="delivery-title">Delivery &amp; storage</h2><dl><div><dt>Image requests <small>Last 14 days</small></dt><dd id="stat-views">0</dd></div><div><dt>Bandwidth <small>Last 14 days</small></dt><dd id="stat-bandwidth">0 B</dd></div><div><dt>Storage in use <small>Images &amp; quarantine</small></dt><dd id="stat-storage">0 B</dd></div></dl><progress id="storage-progress" max="100" value="0">0%</progress><p id="storage-limit">Loading storage limit</p></section>
+    </div>
+    {% endif %}
+    <section aria-labelledby="images-title" class="library-section"><div class="section-heading"><h2 id="images-title">{{ 'Recent images' if page == '/' else 'All images' }}</h2>{% if page == '/' %}<a href="/images">View library</a>{% else %}<span id="image-total">0 images</span>{% endif %}</div>
+      <div class="filters"><label class="search-label">Search images<input id="image-search" type="search" placeholder="Search by filename" maxlength="100"></label><label>Safety state<select id="image-state"><option value="">All states</option><option value="ready">Approved</option><option value="pending">Queued</option><option value="scanning">Scanning</option><option value="scan_error">Scanner error</option><option value="blocked">Blocked</option><option value="expired">Expired</option></select></label><button id="refresh-images">Refresh</button></div>
+      <div class="image-table"><div class="table-heading"><span>Image</span><span>Safety state</span><span class="number">Size / dimensions</span><span>Access</span><span>Actions</span></div><div id="image-rows"><p class="empty-state">Loading your image library...</p></div></div><button id="load-more" hidden>Load more images</button>
+    </section>
+    {% elif page == '/keys' %}
+    <header class="title-row"><div><h1>Application keys</h1><p>One credential per application. Access stays within its own library.</p></div><button class="primary" id="open-key">Create API key +</button></header>
+    <section class="info-strip"><h2>Keys have a limited lifetime</h2><p>Choose the permissions each application needs. Keys are shown once and stored as hashes. Revoking a key stops API access; its approved public images remain public until deleted.</p></section>
+    <section aria-labelledby="keys-title"><div class="section-heading"><h2 id="keys-title">Credentials</h2><button id="refresh-keys">Refresh</button></div><div id="key-rows"><p class="empty-state">Loading application keys...</p></div></section>
+    {% elif page == '/safety' %}
+    <header class="title-row"><div><h1>Content safety</h1><p>Every image must pass NSFW screening before delivery.</p></div><button id="refresh-safety">Refresh</button></header>
+    <section class="safety-grid" aria-labelledby="scanners-title"><div><h2 id="scanners-title">Scan pipeline</h2><p>NSFW scanning is required. Malware and specialist checks are optional; once enabled, they must also pass. A configured scanner can still be unavailable.</p><p>The local model detects exposed nudity. It can miss content and does not determine whether an image is illegal.</p></div><div id="scanner-rows" class="settings-panel"></div></section>
+    <section class="safety-grid" aria-labelledby="policy-title"><div><h2 id="policy-title">Quarantine policy</h2><p>There is no manual approval or scanner bypass. Failed scans can be retried; blocked images cannot be released.</p></div><div class="settings-panel"><dl class="policy-list"><div><dt>Unapproved image delivery</dt><dd>Denied</dd></div><div><dt>Scanner outage</dt><dd>Keep private</dd></div><div><dt>Automatic attempts</dt><dd>5, with backoff</dd></div><div><dt>Quarantine retention</dt><dd>24 hours</dd></div><div><dt>Blocked image bytes</dt><dd>Deleted</dd></div><div><dt>Admin audit retention</dt><dd>90 days</dd></div></dl></div></section>
+    <section aria-labelledby="audit-title"><div class="section-heading"><h2 id="audit-title">Recent audit events</h2><span>Metadata only</span></div><div id="audit-rows"></div></section>
+    {% endif %}
+    <footer class="sheet-footer"><span>Stored on your server. Served after screening.</span><a href="/openapi.json">OpenAPI schema</a></footer>
+  </main>
+</div>
+<dialog id="upload-dialog"><form id="upload-form"><div class="dialog-heading"><h2>Upload an image</h2><button type="button" class="plain close-dialog" aria-label="Close upload">Close</button></div><p>JPEG, PNG or static WebP. Images stay quarantined until all checks pass. Original files are sent to your configured safety providers.</p><label for="upload-file">Image file</label><input id="upload-file" type="file" name="file" accept="image/jpeg,image/png,image/webp" required><label class="checkbox"><input type="checkbox" name="public" checked> Create a public URL after approval</label><p class="form-message" role="status"></p><button type="submit" class="primary">Upload for screening</button></form></dialog>
+<dialog id="key-dialog"><form id="key-form"><div class="dialog-heading"><h2>Create an API key</h2><button class="plain close-dialog" type="button">Close</button></div><label for="key-name">Application name</label><input id="key-name" name="name" maxlength="80" required placeholder="e.g. SchoolSoftPlus"><label for="key-expiry">Expires in</label><select id="key-expiry" name="expiresInDays"><option value="30">30 days</option><option value="90" selected>90 days</option><option value="365">365 days</option></select><fieldset><legend>Permissions</legend><label class="checkbox"><input type="checkbox" name="scope" value="images:read" checked> Read images and statistics</label><label class="checkbox"><input type="checkbox" name="scope" value="images:write" checked> Upload images</label><label class="checkbox"><input type="checkbox" name="scope" value="images:delete"> Delete images</label></fieldset><p class="form-message" role="status"></p><button class="primary" type="submit">Create key</button></form></dialog>
+<dialog id="secret-dialog"><div class="dialog-heading"><h2>Save your API key</h2><button class="plain close-dialog" type="button">Close</button></div><p>This is the only time this credential is displayed. Store it in your application's server-side secrets.</p><label for="new-secret">API key</label><input id="new-secret" readonly><button id="copy-secret">Copy key</button><p id="copy-status" role="status"></p></dialog>
+<dialog id="confirm-dialog"><form id="confirm-form"><h2 id="confirm-title">Confirm action</h2><p id="confirm-description"></p><div class="dialog-actions"><button class="close-dialog" type="button">Cancel</button><button class="primary" type="submit">Confirm</button></div></form></dialog>
+<div id="toast" role="status" hidden></div>
+{% endblock %}

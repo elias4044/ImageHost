@@ -1,0 +1,12 @@
+.venv/
+.tmp/
+.env
+data/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.taste-skill/inspect/
+.taste-skill/browser/
+*.pyc
+.taste-skill
+DESIGN.md

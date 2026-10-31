@@ -1,0 +1,42 @@
+name: Checks
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+      - run: python -m pip install -r requirements.lock -r requirements-dev.txt
+      - run: ruff check app moderation tests scripts examples
+      - run: ruff format --check app moderation tests scripts examples
+      - run: python -m pytest
+      - run: docker build -t imagehost:test .
+      - run: docker build -f moderation/Dockerfile -t imagehost-nsfw:test .
+      - name: Smoke test Compose
+        shell: bash
+        run: |
+          export BASE_URL=http://localhost:8000
+          export NSFW_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          export ADMIN_PASSWORD_HASH="$(python -c 'from argon2 import PasswordHasher; print(PasswordHasher().hash("ci-only-test-password"))')"
+          docker compose -f compose.yaml -f compose.local.yaml config --quiet
+          docker compose -f compose.yaml -f compose.local.yaml up -d --build
+          trap 'docker compose -f compose.yaml -f compose.local.yaml down -v' EXIT
+          for attempt in {1..30}; do
+            if curl --fail http://localhost:8000/health/live; then
+              curl --fail http://localhost:8000/login
+              docker compose exec -T nsfw python -m moderation.smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs imagehost
+          exit 1

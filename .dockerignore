@@ -1,0 +1,12 @@
+.git
+.venv
+.tmp
+.env
+data
+.taste-skill
+.pytest_cache
+.ruff_cache
+__pycache__
+**/__pycache__
+**/*.pyc
+tests

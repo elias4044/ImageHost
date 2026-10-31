@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Sign in - ImageHost{% endblock %}
+{% block body %}
+<main class="login-layout">
+  <div class="login-brand"><img src="/static/mark.svg" alt="" width="36" height="36"> ImageHost</div>
+  <section class="login-panel">
+    <h1>Your images. Your server.</h1>
+    <p>Sign in to manage your image library, application keys and content safety.</p>
+    <form id="login-form">
+      <label for="password">Admin password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024" autofocus>
+      <button class="primary" type="submit">Sign in</button>
+      <p class="form-message" role="status"></p>
+    </form>
+    <a href="/docs">Read the API documentation</a>
+  </section>
+  <p class="login-note">Self-hosted image infrastructure. Quarantine before delivery.</p>
+</main>
+{% endblock %}
