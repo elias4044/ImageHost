@@ -339,7 +339,9 @@ def createApp(settings=None):
         if not content or len(content) > settings.maxUploadBytes:
             raise HTTPException(413, "Image is empty or exceeds upload limit")
         try:
-            normalized, width, height, digest = await run_in_threadpool(normalizeImage, content)
+            normalized, width, height, digest = await run_in_threadpool(
+                normalizeImage, content, settings.imageQuality, settings.imageMaxDimension
+            )
         except ValueError as error:
             raise HTTPException(415, str(error)) from None
         if len(normalized) > settings.maxUploadBytes:
@@ -581,6 +583,11 @@ def createApp(settings=None):
             "nsfwBackend": settings.nsfwBackend,
             "maxUploadBytes": settings.maxUploadBytes,
             "maxStorageBytes": settings.maxStorageBytes,
+            "compression": {
+                "format": "webp",
+                "quality": settings.imageQuality,
+                "maxDimension": settings.imageMaxDimension,
+            },
             "quarantineHours": 24,
             "policy": "NSFW screening is required. Optional enabled checks must also approve. Blocked content cannot be released.",
             "workerAlive": worker.thread.is_alive(),

@@ -7,7 +7,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 Image.MAX_IMAGE_PIXELS = 25_000_000
 
 
-def normalizeImage(content):
+def normalizeImage(content, quality=80, maxDimension=2560):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
@@ -18,11 +18,13 @@ def normalizeImage(content):
                     raise ValueError("Animated images are not supported")
                 image.load()
                 image = ImageOps.exif_transpose(image)
+                if maxDimension:
+                    image.thumbnail((maxDimension, maxDimension), Image.Resampling.LANCZOS)
                 hasAlpha = "A" in image.getbands() or "transparency" in image.info
                 clean = Image.new("RGBA" if hasAlpha else "RGB", image.size)
                 clean.paste(image.convert(clean.mode))
                 output = io.BytesIO()
-                clean.save(output, format="WEBP", quality=90, method=4)
+                clean.save(output, format="WEBP", quality=quality, method=6)
                 return output.getvalue(), clean.width, clean.height, hashlib.sha256(content).hexdigest()
     except (
         UnidentifiedImageError,

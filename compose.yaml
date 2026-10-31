@@ -18,6 +18,8 @@ services:
       NSFW_THRESHOLD: ${NSFW_THRESHOLD:-0.5}
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
       MAX_STORAGE_MB: ${MAX_STORAGE_MB:-10240}
+      IMAGE_QUALITY: ${IMAGE_QUALITY:-80}
+      IMAGE_MAX_DIMENSION: ${IMAGE_MAX_DIMENSION:-2560}
     volumes:
       - imagehost_data:/data
     expose:

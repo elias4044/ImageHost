@@ -4,7 +4,7 @@ Verified locally on 2026-10-31 using Python 3.14.7 and Node 24.19.0.
 
 ## Application checks
 
-- 63 pytest tests pass. Adapter tests use synthetic replies, and uploaded images
+- 72 pytest tests pass. Adapter tests use synthetic replies, and uploaded images
   are harmless generated fixtures. No illegal material is used.
 - Ruff lint and formatting checks pass for app, tests, scripts and example code.
 - JavaScript syntax checks pass for the dashboard and chart renderer.
@@ -77,5 +77,11 @@ authenticated upload, actual local inference in a child process, ready verdict,
 and public WebP delivery. No scanner HTTP calls, ClamAV or specialist provider
 were used in that check. New tests cover optional-check selection, local process
 timeouts/failures, malformed output and rejection at the NSFW threshold.
+
+Compression checks cover reduced output size on a detailed generated PNG,
+configurable quality, aspect-ratio-preserving resizing, original-size mode,
+no upscaling, orientation, transparency, invalid settings, stored-byte accounting
+and continued quarantine before approval. Defaults are WebP quality 80 with a
+2560-pixel longest edge. Existing files are not recompressed.
 
 Use docs/deployment.md and docs/moderation.md before enabling production use.

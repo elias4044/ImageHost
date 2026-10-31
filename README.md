@@ -8,8 +8,9 @@ Host images locally through an API. Open source & free. Written in Python.
   scanner configuration, audit events, application keys, and scan retries.
 - Versioned REST API with machine-readable OpenAPI at `/openapi.json` and
   readable reference at `/docs`.
-- Static JPEG, PNG and WebP ingestion; normalized WebP delivery with metadata
-  removed. Animated images and images over 25 megapixels are rejected.
+- Static JPEG, PNG and WebP ingestion; compressed WebP delivery with metadata
+  removed and configurable quality and maximum dimensions. Animated images and
+  images over 25 megapixels are rejected.
 - Required local NudeNet screening, optional ClamAV malware scanning, and an
   optional HTTPS specialist adapter for operators who need additional checks.
 - Durable queue, five automatic attempts with exponential backoff, 24-hour
@@ -139,6 +140,32 @@ expiry, deletion races, quotas, body limits, authentication and adapter decision
 CI also builds the Docker image and boots the Compose stack for smoke checks.
 The locked dependencies include transitive runtime packages; update the lock
 alongside `requirements.txt`, then rerun tests and container verification.
+
+## Image compression
+
+New uploads are compressed to WebP at quality 80 using the encoder's highest
+compression effort. Images larger than 2560 pixels on either edge are resized
+proportionally; smaller images are never enlarged. Transparency is preserved,
+camera orientation is applied, and embedded metadata is removed.
+
+Configure these values in `.env` and restart the app (or redeploy with Compose):
+
+```dotenv
+IMAGE_QUALITY=80
+IMAGE_MAX_DIMENSION=2560
+```
+
+IMAGE_QUALITY accepts 1-100; lower values trade detail for smaller files.
+IMAGE_MAX_DIMENSION=0 keeps the original dimensions. The default 2560-pixel
+limit reduces storage for large photographs; choose a larger limit for detailed
+artwork or documents. WebP encoding does not guarantee every small or already
+optimized source becomes smaller.
+
+The compressed image goes through the normal scan gate before delivery. The
+original is retained only during quarantine and deleted after approval. Storage
+usage reflects the actual stored bytes. Existing hosted images are not rewritten;
+these settings apply to new uploads. `/api/v1/system` exposes active compression
+settings for administrators.
 
 ## Operating limits
 

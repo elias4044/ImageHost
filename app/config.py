@@ -29,6 +29,8 @@ class Settings:
     safetyToken: str = field(default_factory=lambda: os.getenv("SAFETY_TOKEN", ""))
     maxUploadBytes: int = field(default_factory=lambda: int(os.getenv("MAX_UPLOAD_MB", "20")) * 1024**2)
     maxStorageBytes: int = field(default_factory=lambda: int(os.getenv("MAX_STORAGE_MB", "10240")) * 1024**2)
+    imageQuality: int = field(default_factory=lambda: int(os.getenv("IMAGE_QUALITY", "80")))
+    imageMaxDimension: int = field(default_factory=lambda: int(os.getenv("IMAGE_MAX_DIMENSION", "2560")))
     nsfwThreshold: float = field(default_factory=lambda: float(os.getenv("NSFW_THRESHOLD", "0.5")))
     workerEnabled: bool = True
 
@@ -72,6 +74,10 @@ class Settings:
             raise ValueError("NSFW_TOKEN must contain at least 32 characters")
         if not 0.25 <= self.nsfwThreshold < 1 or self.maxUploadBytes < 1 or self.maxStorageBytes < 1:
             raise ValueError("Invalid content limits")
+        if not 1 <= self.imageQuality <= 100:
+            raise ValueError("IMAGE_QUALITY must be between 1 and 100")
+        if not 0 <= self.imageMaxDimension <= 16383:
+            raise ValueError("IMAGE_MAX_DIMENSION must be 0 (keep dimensions) or between 1 and 16383")
 
     def scannerConfig(self):
         return {

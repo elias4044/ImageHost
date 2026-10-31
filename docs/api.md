@@ -62,6 +62,13 @@ No CORS is enabled. Use server-to-server calls for uploads and private delivery;
 approved public URLs may be embedded as images on other origins. Responses use
 Cache-Control: no-store so subsequent requests consult the publication gate.
 
+New uploads are encoded as WebP using IMAGE_QUALITY (default 80). The longest
+edge is capped at IMAGE_MAX_DIMENSION (default 2560 pixels), preserving aspect
+ratio without enlarging smaller images. Set the dimension limit to 0 to keep
+original dimensions. Returned size, width and height describe the compressed
+image that will be served after approval, not the source file. Existing stored
+images are unchanged. Admin `/api/v1/system` reports these compression settings.
+
 ## Administrative API
 
 GET/POST `/api/v1/keys`, DELETE `/api/v1/keys/{keyId}`, GET `/api/v1/system`,

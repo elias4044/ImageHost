@@ -5,7 +5,8 @@
 Every upload follows this pipeline:
 
 1. Bound request size, authenticate, validate the decoded image, reject animation
-   and excessive pixels, re-encode into metadata-free WebP, reserve storage.
+   and excessive pixels, resize to the configured dimension limit, compress into
+   metadata-free WebP using the configured quality, and reserve storage.
 2. Store original and rebuilt files in private storage; record a pending job.
 3. If ANTIVIRUS_ENABLED=true, scan both files with ClamAV using INSTREAM.
    Anything except an exact clean response prevents publication.
